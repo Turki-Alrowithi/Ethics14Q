@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Quiz & Midterm Review — Online Part</title>
+<style>
+  :root{
+    --ink:#1a1d29;
+    --paper:#f6f4ee;
+    --card:#ffffff;
+    --line:#d8d3c4;
+    --accent:#2d5f5d;
+    --accent-soft:#e3eeec;
+    --gold:#b8893a;
+    --right:#2d5f5d;
+    --wrong:#b23b3b;
+    --right-bg:#e6f0ed;
+    --wrong-bg:#f6e6e4;
+    --muted:#6b6759;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Iowan Old Style','Palatino Linotype',Georgia,serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    padding:0 0 80px;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+  header{
+    background:var(--ink);
+    color:var(--paper);
+    padding:54px 0 46px;
+    margin-bottom:34px;
+    border-bottom:5px solid var(--gold);
+  }
+  header .wrap{display:flex;flex-direction:column;gap:8px}
+  .eyebrow{
+    font-family:'SF Mono',ui-monospace,Menlo,monospace;
+    font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--gold);
+  }
+  h1{font-size:38px;font-weight:600;letter-spacing:-.5px;line-height:1.1}
+  header p{opacity:.78;font-size:16px;max-width:90%}
+  .progress-bar{
+    position:sticky;top:0;z-index:20;
+    height:5px;background:var(--line);
+  }
+  .progress-fill{height:100%;background:var(--accent);width:0;transition:width .35s ease}
+  .qcard{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:26px 26px 28px;
+    margin-bottom:22px;
+  }
+  .qhead{display:flex;gap:14px;align-items:baseline;margin-bottom:6px}
+  .qnum{
+    font-family:'SF Mono',ui-monospace,Menlo,monospace;
+    font-size:13px;color:var(--gold);font-weight:700;flex-shrink:0;
+    letter-spacing:.05em;
+  }
+  .qtype{
+    font-family:'SF Mono',ui-monospace,Menlo,monospace;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);border:1px solid var(--line);
+    padding:2px 8px;border-radius:99px;margin-left:auto;flex-shrink:0;
+  }
+  .qtext{font-size:18px;font-weight:500;margin:8px 0 18px;line-height:1.4}
+  .opt{
+    display:block;width:100%;text-align:left;
+    background:var(--paper);border:1px solid var(--line);
+    border-radius:4px;padding:13px 16px;margin-bottom:10px;
+    font-family:inherit;font-size:15.5px;color:var(--ink);
+    cursor:pointer;transition:all .15s ease;line-height:1.4;
+  }
+  .opt:hover:not(:disabled){border-color:var(--accent);background:#fff}
+  .opt:disabled{cursor:default}
+  .opt.correct{background:var(--right-bg);border-color:var(--right);color:var(--right);font-weight:600}
+  .opt.incorrect{background:var(--wrong-bg);border-color:var(--wrong);color:var(--wrong)}
+  .opt .mark{float:right;font-weight:700;margin-left:10px}
+  /* matching */
+  .match-row{display:flex;gap:12px;align-items:stretch;margin-bottom:10px;flex-wrap:wrap}
+  .match-term{
+    flex:0 0 200px;background:var(--accent-soft);border:1px solid var(--accent);
+    border-radius:4px;padding:11px 14px;font-weight:600;font-size:15px;
+    color:var(--accent);display:flex;align-items:center;
+  }
+  .match-select{
+    flex:1 1 240px;min-width:200px;
+    font-family:inherit;font-size:15px;padding:11px 12px;
+    border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);
+  }
+  .match-select.correct{border-color:var(--right);background:var(--right-bg);color:var(--right);font-weight:600}
+  .match-select.incorrect{border-color:var(--wrong);background:var(--wrong-bg);color:var(--wrong)}
+  .tf-row{display:flex;gap:12px}
+  .tf-row .opt{margin-bottom:0;text-align:center;font-weight:600}
+  .check{
+    background:var(--accent);color:#fff;border:none;
+    padding:10px 22px;border-radius:4px;font-family:'SF Mono',ui-monospace,Menlo,monospace;
+    font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+    transition:opacity .15s;
+  }
+  .check:hover{opacity:.88}
+  .check:disabled{opacity:.4;cursor:default}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .check.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .feedback{margin-top:14px;font-size:14px;padding:10px 14px;border-radius:4px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:var(--right-bg);color:var(--right)}
+  .feedback.no{background:var(--wrong-bg);color:var(--wrong)}
+  .scorebox{
+    position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:var(--paper);
+    padding:16px 0;text-align:center;
+    font-family:'SF Mono',ui-monospace,Menlo,monospace;letter-spacing:.1em;font-size:14px;
+    border-top:3px solid var(--gold);z-index:30;
+  }
+  .scorebox b{color:var(--gold);font-size:18px}
+  @media(max-width:560px){
+    h1{font-size:28px}
+    .match-term{flex:1 1 100%}
+    .match-select{flex:1 1 100%}
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="pfill"></div></div>
+<header>
+  <div class="wrap">
+    <span class="eyebrow">First Quiz &amp; Midterm — Online Part</span>
+    <h1>Ethics, IP &amp; Professional Codes</h1>
+    <p>A 14-question review covering data ethics, intellectual property, organizational infrastructure, and professional codes of conduct. For matching questions, make your selections and tap "Show answer" to reveal the correct pairings.</p>
+  </div>
+</header>
+
+<div class="wrap" id="quiz"></div>
+
+<div class="scorebox">MC &amp; T/F Score: <b id="score">0</b> / <span id="total">0</span></div>
+
+<script>
+const data = [
+  {type:'match', q:"Link data ethics concerns (E1/E2) with real-world practice.",
+   pairs:[
+     ["Privacy & Data Protection","Minimize data collection; ensure consent"],
+     ["Transparency","Explain data practices; enable user scrutiny"],
+     ["Accountability","Hold orgs responsible for data misuse"],
+     ["Security","Protect data against unauthorized access"]
+   ]},
+  {type:'match', q:"Match the IP rights overview to practical software development actions.",
+   pairs:[
+     ["Patents","Protects new inventions; consider patentability during R&D"],
+     ["Industrial Designs","Protects appearance; relevant for UI/UX aesthetics"],
+     ["Copyright","Covers code; ensures attribution and licensing"],
+     ["Trademarks","Brand identity; protect logos and brand names"]
+   ]},
+  {type:'match', q:"Link the 'Organizational Infrastructure' components to IT ecosystem needs.",
+   pairs:[
+     ["Common Vision","Shared strategic objectives guiding IT investments"],
+     ["Cooperation","Interpersonal collaboration toward joint goals"],
+     ["Empowerment","Autonomy in decision-making within a team"],
+     ["Learning","Norms that encourage continuous improvement"]
+   ]},
+  {type:'match', q:"Connect the concept of 'Striking The Balance' in IP to software practice.",
+   pairs:[
+     ["Striking the Balance","Balancing rights of creators and users; enabling innovation"],
+     ["Patents vs. Copyright","Different scopes; patents for inventions, copyright for expressive works"],
+     ["Disclosures","Patents require disclosure; copyright does not"],
+     ["Enforcement","Licensing and sales; protect against unauthorized use"]
+   ]},
+  {type:'match', q:"Pair the HDR (Human Diversity & Rights) themes with SE inclusion actions.",
+   pairs:[
+     ["Diversity & Inclusion","Diverse teams improve creativity and decision-making"],
+     ["Accessibility","Design for users with varying abilities"],
+     ["Equity in Opportunities","Ensure fair access to projects and career growth"],
+     ["Non-discrimination","Reject bias across all stages of development"]
+   ]},
+  {type:'tf', q:"Patents' protection is territorial, applying only within the country where the patent was granted.",
+   answer:true},
+  {type:'tf', q:"Patents grant exclusive rights over an invention for a limited period, typically 20 years.",
+   answer:true},
+  {type:'mc', q:"Which framing best captures the primary aim of professional codes of ethics in software engineering, as discussed by Gogoll et al. (2021)?",
+   options:[
+     "They provide a normative basis for decision-making rather than a prescriptive algorithm for action.",
+     "They serve as legally binding contracts enforceable in court.",
+     "They function as step-by-step algorithms that fully determine the right action.",
+     "They primarily exist to protect companies from liability."
+   ], answer:0},
+  {type:'mc', q:"Which reading emphasizes the need for ethical deliberation to be embedded inside agile teams rather than external ethics councils?",
+   options:[
+     "Ethical Deliberation in Agile Software Processes (EDAP)",
+     "The Waterfall Ethics Model",
+     "External Review Board Framework",
+     "Top-Down Compliance Doctrine"
+   ], answer:0},
+  {type:'mc', q:"Which principle emphasizes 'human rights, autonomy, and protecting privacy' in software engineering?",
+   options:[
+     "Contribute to society; promote human rights and autonomy; protect privacy (1.1)",
+     "Maximize shareholder value above all else",
+     "Prioritize speed of delivery over user concerns",
+     "Avoid documentation to protect trade secrets"
+   ], answer:0},
+  {type:'mc', q:"According to the E2 perspectives, why are 'Codes of Ethics' sometimes insufficient for guiding AI and software decisions?",
+   options:[
+     "Codes are underdetermined and can trigger reactive, gut-feeling decisions.",
+     "Codes are too detailed and leave no room for interpretation.",
+     "Codes are updated too frequently to follow.",
+     "Codes are legally mandatory in every jurisdiction."
+   ], answer:0},
+  {type:'mc', q:"What does the EDAP framework propose as essential steps for ethical deliberation in agile software processes?",
+   options:[
+     "Descriptive ethics, normative ethics, and applied ethics integrated into development.",
+     "Only quarterly external audits.",
+     "Replacing developers with ethics officers.",
+     "Deferring all ethics decisions to legal teams."
+   ], answer:0},
+  {type:'mc', q:"In the context of software ethics, what does 'Transparency and Explainability' entail as discussed in modern guidelines?",
+   options:[
+     "Communicating capabilities, limitations, uncertainties, and risks to stakeholders.",
+     "Keeping all system behavior confidential.",
+     "Publishing only marketing materials.",
+     "Sharing source code with competitors."
+   ], answer:0},
+  {type:'mc', q:"According to ACM/IEEE code discussions, what is a major limitation of many Codes of Conduct in guiding engineers in uncertain cases?",
+   options:[
+     "They are often underdetermined and can lead to cherry-picking of values.",
+     "They are too short to be useful.",
+     "They are written in inaccessible legal language only.",
+     "They change with every software release."
+   ], answer:0}
+];
+
+let answered = 0, correct = 0;
+const total = data.length;
+const scoredTotal = data.filter(d=>d.type!=='match').length;
+document.getElementById('total').textContent = scoredTotal;
+const quiz = document.getElementById('quiz');
+
+// shuffle helper
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function updateProgress(){
+  document.getElementById('score').textContent = correct;
+  document.getElementById('pfill').style.width = (answered/total*100)+'%';
+}
+
+data.forEach((item, idx)=>{
+  const card = document.createElement('div');
+  card.className='qcard';
+  const typeLabel = item.type==='mc'?'Multiple Choice':item.type==='tf'?'True / False':'Matching';
+  card.innerHTML = `<div class="qhead"><span class="qnum">Q${idx+1}</span><span class="qtype">${typeLabel}</span></div>
+    <div class="qtext">${item.q}</div>`;
+
+  if(item.type==='mc'){
+    const opts = item.options.map((o,i)=>({o,i}));
+    const sh = shuffle(opts);
+    sh.forEach(({o,i})=>{
+      const b=document.createElement('button');
+      b.className='opt';b.textContent=o;
+      b.onclick=()=>{
+        if(card.dataset.done) return;
+        card.dataset.done='1';
+        const isRight = i===item.answer;
+        card.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+        if(isRight){b.classList.add('correct');b.innerHTML+='<span class="mark">✓</span>';correct++}
+        else{
+          b.classList.add('incorrect');b.innerHTML+='<span class="mark">✗</span>';
+          card.querySelectorAll('.opt').forEach(x=>{if(x.textContent===item.options[item.answer]){x.classList.add('correct');x.innerHTML+='<span class="mark">✓</span>'}});
+        }
+        answered++;updateProgress();
+      };
+      card.appendChild(b);
+    });
+  }
+
+  else if(item.type==='tf'){
+    const row=document.createElement('div');row.className='tf-row';
+    [['True',true],['False',false]].forEach(([lbl,val])=>{
+      const b=document.createElement('button');
+      b.className='opt';b.textContent=lbl;
+      b.onclick=()=>{
+        if(card.dataset.done) return;
+        card.dataset.done='1';
+        card.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+        const isRight = val===item.answer;
+        if(isRight){b.classList.add('correct');b.innerHTML+='<span class="mark">✓</span>';correct++}
+        else{
+          b.classList.add('incorrect');b.innerHTML+='<span class="mark">✗</span>';
+          card.querySelectorAll('.opt').forEach(x=>{if(x.textContent===(item.answer?'True':'False')){x.classList.add('correct')}});
+        }
+        answered++;updateProgress();
+      };
+      row.appendChild(b);
+    });
+    card.appendChild(row);
+  }
+
+  else if(item.type==='match'){
+    const defs = item.pairs.map(p=>p[1]);
+    item.pairs.forEach((pair,pi)=>{
+      const row=document.createElement('div');row.className='match-row';
+      const term=document.createElement('div');term.className='match-term';term.textContent=pair[0];
+      const sel=document.createElement('select');sel.className='match-select';sel.dataset.correct=pair[1];
+      sel.innerHTML=`<option value="">— choose the matching practice —</option>`+
+        shuffle(defs).map(d=>`<option value="${d.replace(/"/g,'&quot;')}">${d}</option>`).join('');
+      row.appendChild(term);row.appendChild(sel);card.appendChild(row);
+    });
+    const btnRow=document.createElement('div');btnRow.className='btn-row';
+    const checkBtn=document.createElement('button');checkBtn.className='check';checkBtn.textContent='Check answers';
+    const showBtn=document.createElement('button');showBtn.className='check secondary';showBtn.textContent='Show correct answers';
+    const fb=document.createElement('div');fb.className='feedback';
+    const sels=()=>card.querySelectorAll('.match-select');
+
+    checkBtn.onclick=()=>{
+      if(card.dataset.checked) return;
+      const list=sels();
+      let allFilled=true;list.forEach(s=>{if(!s.value)allFilled=false});
+      if(!allFilled){fb.className='feedback show no';fb.textContent='Please make a selection for every term first.';return}
+      card.dataset.checked='1';
+      let right=0;
+      list.forEach(s=>{
+        if(s.value===s.dataset.correct){s.classList.add('correct');right++}
+        else{s.classList.add('incorrect')}
+      });
+      if(right===list.length){fb.className='feedback show ok';fb.textContent='All matches correct ✓';}
+      else{fb.className='feedback show no';fb.textContent=`${right} of ${list.length} correct. Tap "Show correct answers" to reveal the right pairings.`;}
+    };
+
+    showBtn.onclick=()=>{
+      const list=sels();
+      list.forEach(s=>{
+        s.disabled=true;
+        s.classList.remove('incorrect');
+        [...s.options].forEach(o=>{if(o.value===s.dataset.correct)s.value=o.value});
+        s.classList.add('correct');
+      });
+      checkBtn.disabled=true;showBtn.disabled=true;
+      fb.className='feedback show ok';
+      fb.textContent='Correct pairings are now shown for each term ✓';
+    };
+
+    btnRow.appendChild(checkBtn);btnRow.appendChild(showBtn);
+    card.appendChild(btnRow);card.appendChild(fb);
+  }
+
+  quiz.appendChild(card);
+});
+</script>
+</body>
+</html>
